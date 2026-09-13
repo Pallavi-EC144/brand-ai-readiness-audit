@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brand AI-Readiness Audit</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:1000px;margin:0 auto;padding:40px 20px;background:#0b1020;color:#eef2ff}h1{font-size:42px;margin:0 0 10px}.sub{color:#aab4d0;margin-bottom:28px}.row{display:flex;gap:10px}input{flex:1;padding:14px;border-radius:10px;border:1px solid #35405f;background:#11182c;color:white;font-size:16px}button{padding:14px 20px;border:0;border-radius:10px;font-weight:700;cursor:pointer}.card{margin-top:24px;padding:22px;border:1px solid #2d3755;border-radius:14px;background:#11182c}.stats{display:flex;gap:10px;flex-wrap:wrap}.stat{padding:10px 14px;border-radius:9px;background:#1a2440}.finding{margin-top:14px;padding:16px;border-radius:10px;background:#0d1427;border-left:4px solid #7f8cff}.sev{font-weight:800;text-transform:uppercase;font-size:12px}.muted{color:#9ca8c5}pre{white-space:pre-wrap;overflow:auto;font-size:12px}</style>
+</head>
+<body>
+<h1>Brand AI-Readiness Audit</h1>
+<p class="sub">Read-only audit for AI discoverability and on-site engagement.</p>
+<div class="row"><input id="url" placeholder="https://example.com"><button id="run">Audit site</button></div>
+<div id="status" class="muted" style="margin-top:14px"></div><div id="out"></div>
+<script>
+const $=id=>document.getElementById(id);
+$('run').onclick=async()=>{const u=$('url').value.trim(); if(!u)return; $('status').textContent='Auditing…'; $('out').innerHTML=''; try{const r=await fetch('/api/audit?url='+encodeURIComponent(u)); const d=await r.json(); if(!r.ok)throw new Error(d.error||'Audit failed'); $('status').textContent=`Audited ${d.site} · ${d.audit_metadata.pages_crawled} pages`; const s=d.summary; let html=`<div class="card"><div class="stats"><div class="stat">${s.total_findings} findings</div><div class="stat">Critical: ${s.critical}</div><div class="stat">High: ${s.high}</div><div class="stat">Medium: ${s.medium}</div><div class="stat">Low: ${s.low}</div></div></div>`; d.findings.forEach(f=>html+=`<div class="card finding"><div class="sev">${f.severity} · ${f.category} / ${f.sub_category}</div><h2>${esc(f.title)}</h2><p>${esc(f.evidence)}</p><p><b>Action:</b> ${esc(f.suggested_action.summary)}</p></div>`); $('out').innerHTML=html;}catch(e){$('status').textContent='';$('out').innerHTML='<div class="card"><b>Audit failed:</b> '+esc(e.message)+'</div>'}};
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+</script>
+</body></html>
